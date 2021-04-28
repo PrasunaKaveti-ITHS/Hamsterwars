@@ -1,11 +1,12 @@
 const admin = require("firebase-admin");
 
+let serviceAccount;
 if(process.env.PRIVATE_KEY){
   // på Heroku
-  const serviceAccount = JSON.parse(process.env.PRIVATE_KEY)
+   serviceAccount = JSON.parse(process.env.PRIVATE_KEY)
 }else{
   //lokalt på min dator
-  const serviceAccount = require("./hamsterwars-firebase-private-key.json");
+  serviceAccount = require("./hamsterwars-firebase-private-key.json");
 }
 
 admin.initializeApp({
