@@ -4,7 +4,8 @@ const cors = require('cors')
 const path = require('path')
 const hamsters = require('./routes/hamsters.js')
 
-const PORT = 1320
+//Heroku uses process.env.PORT
+const PORT = process.env.PORT || 1320
 const staticFolder = path.join(__dirname, 'static')
 
 // Middleware
@@ -15,7 +16,7 @@ app.use((req, res, next) => {
 })
 
 app.use(express.json())
-app.use(cors())
+app.use(cors())//Cross-Origin Resource Sharing (CORS)
 app.use(express.static(staticFolder))
 
 // Routes
