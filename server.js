@@ -3,6 +3,7 @@ const app = express()
 const cors = require('cors')
 const path = require('path')
 const hamsters = require('./routes/hamsters.js')
+const matches = require('./routes/matches.js')
 
 //Heroku uses process.env.PORT
 const PORT = process.env.PORT || 1320

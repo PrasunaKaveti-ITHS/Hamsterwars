@@ -7,13 +7,11 @@ const router = express.Router()
 
 // GET /hamsters
 router.get('/', async (req, res) => {
-	// console.log('/hamsters REST API');
-	// res.send('/hamsters REST API')
 
 	const hamstersRef = db.collection('hamsters')
 	const snapshot = await hamstersRef.get()
 
-	if( snapshot.empty ) {
+	if (snapshot.empty) {
 		res.send([])
 		return
 	}
@@ -22,29 +20,29 @@ router.get('/', async (req, res) => {
 	snapshot.forEach(doc => {
 		const data = doc.data()
 		data.id = doc.id  // id behövs för POST+PUT+DELETE
-		items.push( data )
+		items.push(data)
 	})
 	res.send(items)
 })
 // GET /hamsters/random
 router.get('/random', async (req, res) => {
-    const hamstersRef = db.collection('hamsters')
-    const snapshot = await hamstersRef.get()
-   
-    if (snapshot.empty) {
-        console.log('hello')
-        res.send([])
-        return
-    }
- 
-    let items = []
-    snapshot.forEach(doc => {
-        const data = doc.data()
-        items.push(data)
-    });
-    let randomNum = Math.floor(Math.random() * items.length);
- console.log(randomNum)
-    res.send(items[randomNum])
+	const hamstersRef = db.collection('hamsters')
+	const snapshot = await hamstersRef.get()
+
+	if (snapshot.empty) {
+		console.log('hello')
+		res.send([])
+		return
+	}
+
+	let items = []
+	snapshot.forEach(doc => {
+		const data = doc.data()
+		items.push(data)
+	});
+	let randomNum = Math.floor(Math.random() * items.length);
+	console.log(randomNum)
+	res.send(items[randomNum])
 })
 
 // GET /hamsters/:id
@@ -52,7 +50,7 @@ router.get('/:id', async (req, res) => {
 	const id = req.params.id
 	const docRef = await db.collection('hamsters').doc(id).get()
 
-	if( !docRef.exists ) {
+	if (!docRef.exists) {
 		res.status(404).send('Hamster does not exist')
 		return
 	}
@@ -66,7 +64,7 @@ router.post('/', async (req, res) => {
 	// OBS! Måste installera express.json för att detta ska fungera
 	const object = req.body
 
-	if( !isHamstersObject(object) ) {
+	if (!isHamstersObject(object)) {
 		res.sendStatus(400)
 		return
 	}
@@ -81,7 +79,7 @@ router.put('/:id', async (req, res) => {
 	const object = req.body
 	const id = req.params.id
 
-	if( !object || !id ) {
+	if (!object || !id) {
 		res.sendStatus(400)
 		return
 	}
@@ -95,9 +93,9 @@ router.put('/:id', async (req, res) => {
 
 function isHamstersObject(maybeObject) {
 	// Pratigt, men kanske mera lättläst. Kan göras mer kompakt
-	if( !maybeObject )
+	if (!maybeObject)
 		return false
-	else if( !maybeObject.name || !maybeObject.price )
+	else if (!maybeObject.name || !maybeObject.price)
 		return false
 
 	return true
@@ -107,7 +105,7 @@ function isHamstersObject(maybeObject) {
 router.delete('/:id', async (req, res) => {
 	const id = req.params.id
 
-	if( !id ) {
+	if (!id) {
 		res.sendStatus(400)
 		return
 	}
