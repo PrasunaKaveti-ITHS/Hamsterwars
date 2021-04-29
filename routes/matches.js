@@ -1,13 +1,14 @@
+const express = require('express');
+const router = express.Router();
+
 const getDatabase = require('../database.js');
 const db = getDatabase();
 
-const express = require('express');
-const router = express.Router();
 // ** REST API **
 
-// GET /matches
+// GET all matches
 router.get('/', async (req, res) => {
-
+	let allTheMatches = [];
 try {
 	const docRef = db.collection('matches');
 	const snapshot = await docRef.get();
@@ -17,7 +18,6 @@ try {
 		return;
 	};
 
-	let allTheMatches = [];
 	snapshot.forEach(doc => {
 		const data = doc.data();
 		data.id = doc.id;  // id behövs för POST+PUT+DELETE
@@ -62,7 +62,7 @@ router.post('/', async (req, res) => {
 			console.log('Winner hamster id or loser hamster id does not exist');
 			res.sendStatus(400);
 			return;
-		};
+		}
 
 		// incrementing wins and games in hamster object
 		const winnerHamsterData = winnerHamsterRef.data();
@@ -86,6 +86,8 @@ router.post('/', async (req, res) => {
 					  winnerId: matchData.winnerId,
 					  loserId: matchData.loserId 
 					});
+					res.sendStatus(winnerId);
+					res.sendStatus(loserId);
 	}
 	catch(error) {
 		console.log('An error occured! Please try again 🙁' + error.message);
@@ -94,7 +96,6 @@ router.post('/', async (req, res) => {
 });
 
 // DELETE matches by id
-
 router.delete('/:id', async (req, res) => {
 	const id = req.params.id;
 
@@ -102,9 +103,9 @@ router.delete('/:id', async (req, res) => {
 		const docRef = await db.collection('matches').doc(id).get();
 	
 		if(!docRef.exists) {
-			res.sendStatus(404);
+			res.status(404).send('OOPS id does not exist! 🙁' + id);
 			return;
-		};
+		}
 
 		const matchData = docRef.data();
 		const winnerHamsterId = matchData.winnerId;
