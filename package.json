@@ -4,17 +4,19 @@
   "description": "Hamsterwars Project",
   "main": "index.js",
   "scripts": {
-   "start": "node server.js"
+    "start": "node server.js"
   },
-  "keywords": ["node",
+  "keywords": [
+    "node",
     "express",
     "firestore",
-    "api"],
+    "api"
+  ],
   "author": "Prasuna Kaveti",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "firebase-admin": "^9.6.0"
+    "firebase-admin": "^9.7.0"
   }
 }

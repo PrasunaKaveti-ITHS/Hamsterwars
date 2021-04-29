@@ -1,124 +1,204 @@
-const getDatabase = require('../database.js')
-const db = getDatabase()
+const express = require('express');
+const router = express.Router();
 
-const express = require('express')
-const router = express.Router()
-// ** REST API **
+const getDatabase = require('../database.js');
+const db = getDatabase();
 
-// GET /hamsters
+// ** REST API ** 
+
+// GET all hamsters
 router.get('/', async (req, res) => {
+	let allTheHamsters = [];
 
-	const hamstersRef = db.collection('hamsters')
-	const snapshot = await hamstersRef.get()
+	try {
+		const docRef = db.collection('hamsters');
+		const snapShot = await docRef.get();
 
-	if (snapshot.empty) {
-		res.send([])
-		return
+		if (snapShot.empty) {
+			res.status(404).send('OOPS hamsters not found 🙁');
+			return;
+		};
+		snapShot.forEach(doc => {
+			const data = doc.data();
+			data.id = doc.id;
+			allTheHamsters.push(data);
+		})
+		res.send(allTheHamsters);
 	}
 
-	let items = []
- 
-	snapshot.forEach(doc => {
-		const data = doc.data()
-		data.id = doc.id  // id behövs för POST+PUT+DELETE
-		items.push(data)
-	})
-	res.send(items)
+	catch (error) {
+		console.log('An error occured . Please try again 🙁' + error.message);
+		res.status(500).send(error.message);
+	}
+});
 
-})
-// GET /hamsters/random
+// GET random hamster
 router.get('/random', async (req, res) => {
-	const hamstersRef = db.collection('hamsters')
-	const snapshot = await hamstersRef.get()
+	let randomHamster = [];
 
-	if (snapshot.empty) {
-		console.log('hello')
-		res.send([])
-		return
+	try {
+		const docRef = db.collection('hamsters');
+		snapShot = await docRef.get();
+
+		if (snapShot.empty) {
+			res.status(404).send('OOPS hamster not found! 🙁');
+			return;
+		};
+
+		snapShot.forEach(doc => {
+			const data = doc.data();
+			data.id = doc.id;
+			randomHamster.push(data);
+		});
+
+		let aRandomIndex = Math.floor(Math.random() * randomHamster.length);
+		res.send(randomHamster[aRandomIndex]);
 	}
 
-	let items = []
-	
-	snapshot.forEach(doc => {
-		const data = doc.data()
-		items.push(data)
-	});
-	let randomNum = Math.floor(Math.random() * items.length);
-	console.log(randomNum)
-	res.send(items[randomNum])
-})
+	catch (error) {
+		console.log('An error occured. Please try again 🙁' + error.message);
+		res.status(500).send(error.message);
+	}
+});
 
-
-// GET /hamsters/:id
+//GET hamster by id
 router.get('/:id', async (req, res) => {
-	const id = req.params.id
-	const docRef = await db.collection('hamsters').doc(id).get()
+	const id = req.params.id;
 
-	if (!docRef.exists) {
-		res.status(404).send('Hamster does not exist')
-		return
+	try {
+		const docRef = await db.collection('hamsters').doc(id).get();
+
+		if (!docRef.exists) {
+			res.status(404).send('OOPS hamster does not found! 🙁');
+			return;
+		}
+
+		const data = docRef.data();
+		res.send(data);
 	}
- 
-	const data = docRef.data()
-	res.send(data)
-	
-})
 
-// POST /hamsters
+	catch (error) {
+		console.log('An error occured. Please try again 🙁' + error.message);
+		res.status(500).send(error.message);
+	}
+});
+
+// POST hamster        
 router.post('/', async (req, res) => {
-	// OBS! Måste installera express.json för att detta ska fungera
-	const object = req.body
+	const object = req.body;
 
-	if (!isHamstersObject(object)) {
-		res.sendStatus(400)
-		return
+	try {
+		if (!isHamsterObject(object)) {
+			res.sendStatus(400);
+			return;
+		}
+
+		const docRef = await db.collection('hamsters').add(object);
+		const hamsterRef = await db.collection('hamsters').doc(docRef.id).get();
+		const hamsterData = hamsterRef.data();
+		res.send({
+			id: docRef.id,
+			name: hamsterData.name,
+			age: hamsterData.age,
+			favFood: hamsterData.favFood,
+			loves: hamsterData.loves,
+			imgName: hamsterData.imgName,
+			wins: hamsterData.wins,
+			defeats: hamsterData.defeats,
+			games: hamsterData.games
+		});
 	}
 
-	const docRef = await db.collection('hamsters').add(object)
-	res.send(docRef.id)
-	
-})
+	catch (error) {
+		console.log('An error occured. Please try again 🙁' + error.message);
+		res.status(500).send(error.message);
+	}
+});
 
-// PUT /hamsters/:id
+// PUT hamster by id      
 router.put('/:id', async (req, res) => {
-	// OBS! Måste installera express.json för att detta ska fungera
-	const object = req.body
-	const id = req.params.id
+	const object = req.body;
+	const id = req.params.id;
 
-	if (!object || !id) {
-		res.sendStatus(400)
-		return
+	try {
+		const docRef = db.collection('hamsters');
+		const snapShot = await docRef.doc(id).get();
+
+		if
+			(!snapShot.exists) {
+			res.status(404).send('OOPS id does not exist! 🙁 ' + id);
+			return;
+		} else if (!validateHamsterObject(object) || !Object.keys(object).length) {
+			res.sendStatus(400);
+			return;
+		}
+		//The Object.keys() method returns an array of a given object's own enumerable
+		// property names, iterated in the same order that a normal loop would.
+		await docRef.doc(id).set(object, { merge: true });
+		//set with merge will update fields in the document or create it if it doesn't exists
+		res.sendStatus(200);
 	}
 
-	// Vi kan kontrollera om det finns ett doc som matchar id i databasen. Den här koden godkänner id som inte matchar, och lägger till ett nytt doc i databasen.
+	catch (error) {
+		console.log('An error occured. Please try again 🙁' + error.message);
+		res.status(500).send(error.message);
+	}
+});
 
-	const docRef = db.collection('hamsters').doc(id)
-	await docRef.set(object, { merge: true })
-	res.sendStatus(200)
-})
-
-function isHamstersObject(maybeObject) {
-	// Pratigt, men kanske mera lättläst. Kan göras mer kompakt
-	if (!maybeObject)
-		return false
-	else if (!maybeObject.name || !maybeObject.age || !maybeObject.favFood || !maybeObject.loves || !maybeObject.imgName || typeof maybeObject.wins != "number" || typeof maybeObject.defeats != "number" || typeof maybeObject.games != "number")
-		return false
-
-	return true
-}
-
-// DELETE /hamsters/:id
+// DELETE hamster by id   
 router.delete('/:id', async (req, res) => {
-	const id = req.params.id
+	const id = req.params.id;
 
-	if (!id) {
-		res.sendStatus(400)
-		return
+	try {
+		const docRef = await db.collection('hamsters').doc(id).get();
+
+		if (!docRef.exists) {
+			res.status(404).send('OOPS id does not exist! 🙁 ' + id);
+			return;
+		}
+
+		await db.collection('hamsters').doc(id).delete();
+		res.sendStatus(200);
 	}
 
-	await db.collection('hamsters').doc(id).delete()
-	res.sendStatus(200)
-})
+	catch (error) {
+		console.log('An error occured. Please try again 🙁' + error.message);
+		res.status(500).send(error.message);
+	}
+});
 
+// function to check hamster object in POST hamster
+function isHamsterObject(maybeObject) {
 
-module.exports = router
+	if (!maybeObject.name || !maybeObject.age || !maybeObject.favFood || !maybeObject.loves || !maybeObject.imgName || typeof maybeObject.wins != "number" || typeof maybeObject.defeats != "number" || typeof maybeObject.games != "number") {
+		return false;
+	}
+	return true;
+};
+
+//validate for PUT/hamsters. Check key and type
+function validateHamsterObject(hamsterObj) {
+	const digit = /^[0-9]+$/;
+	for (property in hamsterObj) {
+		if (property === 'name' && digit.test(hamsterObj.name)) {
+			return false;
+		} else if (property === 'age' && !digit.test(hamsterObj.age)) {
+			return false;
+		} else if (property === 'favFood' && digit.test(hamsterObj.favFood)) {
+			return false;
+		} else if (property === 'loves' && digit.test(hamsterObj.loves)) {
+			return false;
+		} else if (property === 'imgName' && digit.test(hamsterObj.imgName)) {
+			return false;
+		} else if (property === 'wins' && !digit.test(hamsterObj.wins)) {
+			return false;
+		} else if (property === 'defeats' && !digit.test(hamsterObj.defeats)) {
+			return false;
+		} else if (property === 'games' && !digit.test(hamsterObj.games)) {
+			return false;
+		}
+		return true;
+	}
+};
+
+module.exports = router;
