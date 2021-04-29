@@ -58,7 +58,7 @@ function isMatchesObject(maybeObject) {
 	// Pratigt, men kanske mera lättläst. Kan göras mer kompakt
 	if (!maybeObject)
 		return false
-	else if (!maybeObject.name || !maybeObject.price)
+	else if (!maybeObject.winnerId || !maybeObject.loserId)
 		return false
 
 	return true

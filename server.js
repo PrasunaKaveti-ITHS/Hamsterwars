@@ -27,6 +27,7 @@ app.get('/',(req,res) => {
 })
 // REST API for /hamsters
 app.use('/hamsters', hamsters)
+app.use('/matches',matches)
 
 // Starta servern
 app.listen(PORT, () => {

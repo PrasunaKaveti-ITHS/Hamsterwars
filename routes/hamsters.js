@@ -17,12 +17,14 @@ router.get('/', async (req, res) => {
 	}
 
 	let items = []
+ 
 	snapshot.forEach(doc => {
 		const data = doc.data()
 		data.id = doc.id  // id behövs för POST+PUT+DELETE
 		items.push(data)
 	})
 	res.send(items)
+
 })
 // GET /hamsters/random
 router.get('/random', async (req, res) => {
@@ -36,6 +38,7 @@ router.get('/random', async (req, res) => {
 	}
 
 	let items = []
+	
 	snapshot.forEach(doc => {
 		const data = doc.data()
 		items.push(data)
@@ -44,6 +47,7 @@ router.get('/random', async (req, res) => {
 	console.log(randomNum)
 	res.send(items[randomNum])
 })
+
 
 // GET /hamsters/:id
 router.get('/:id', async (req, res) => {
@@ -54,9 +58,10 @@ router.get('/:id', async (req, res) => {
 		res.status(404).send('Hamster does not exist')
 		return
 	}
-
+ 
 	const data = docRef.data()
 	res.send(data)
+	
 })
 
 // POST /hamsters
@@ -71,6 +76,7 @@ router.post('/', async (req, res) => {
 
 	const docRef = await db.collection('hamsters').add(object)
 	res.send(docRef.id)
+	
 })
 
 // PUT /hamsters/:id
@@ -95,7 +101,7 @@ function isHamstersObject(maybeObject) {
 	// Pratigt, men kanske mera lättläst. Kan göras mer kompakt
 	if (!maybeObject)
 		return false
-	else if (!maybeObject.name || !maybeObject.price)
+	else if (!maybeObject.name || !maybeObject.age || !maybeObject.favFood || !maybeObject.loves || !maybeObject.imgName || typeof maybeObject.wins != "number" || typeof maybeObject.defeats != "number" || typeof maybeObject.games != "number")
 		return false
 
 	return true
